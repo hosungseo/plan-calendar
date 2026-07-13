@@ -56,6 +56,35 @@ for r in ws.iter_rows(min_row=2, values_only=True):
         "proj": proj,
     })
 
+# procedure / follow-up aggregates (raw columns)
+raw_rows = []
+wb2 = openpyxl.load_workbook(SRC, read_only=True)
+for r in wb2["국가법정계획 현황(25.12월 기준)"].iter_rows(min_row=2, values_only=True):
+    if r[0] is not None:
+        raw_rows.append(r)
+
+def flag(v):
+    return 1 if v == 1 else 0
+
+law_year_dist = Counter(int(r[5]) for r in raw_rows if isinstance(r[5], (int, float)))
+proc_counts = {
+    "consult": sum(flag(r[12]) for r in raw_rows),
+    "committee": sum(flag(r[9]) for r in raw_rows),
+    "local": sum(flag(r[13]) for r in raw_rows),
+    "hearing": sum(flag(r[15]) for r in raw_rows),
+    "cabinet": sum(flag(r[14]) for r in raw_rows),
+}
+proc_count_dist = Counter(
+    flag(r[9]) + flag(r[12]) + flag(r[13]) + flag(r[14]) + flag(r[15]) for r in raw_rows
+)
+followup = {
+    "implPlan": sum(flag(r[16]) for r in raw_rows),
+    "changeProvision": sum(flag(r[19]) for r in raw_rows),
+    "implEval": sum(flag(r[18]) for r in raw_rows),
+    "assemblyReport": sum(flag(r[20]) for r in raw_rows),
+    "implPlanNoEval": sum(1 for r in raw_rows if flag(r[16]) and not flag(r[18])),
+}
+
 # aggregates
 proj_years = Counter()
 for p in plans:
@@ -83,6 +112,10 @@ meta = {
     "ministryCount": dict(ministry_count.most_common()),
     "committees": len(committee_count),
     "committeeTop": committee_count.most_common(30),
+    "lawYearDist": dict(sorted(law_year_dist.items())),
+    "procCounts": proc_counts,
+    "procCountDist": dict(sorted(proc_count_dist.items())),
+    "followup": followup,
 }
 
 OUT.write_text("window.PLAN_DATA = " + json.dumps({"meta": meta, "plans": plans}, ensure_ascii=False) + ";\n", encoding="utf-8")

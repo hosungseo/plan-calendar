@@ -59,10 +59,22 @@
   </div>
 </section>
 
-<!-- ② 주기의 해부 -->
-<section class="chapter" id="ch-cycle">
+<!-- ② 계획 신설 추이 -->
+<section class="chapter" id="ch-growth">
   <div class="chapter-head">
     <span class="chapter-no">②</span>
+    <h2>계획 신설 추이 (1961~2026)</h2>
+    <p>막대는 해당 연도에 법률에 계획 수립 근거가 담긴 계획 수(법률포함연도 기준, 확인분 709건).
+    1990년대 63건 → 2000년대 195건 → 2010년대 272건으로 증가했으며,
+    최근 10년(2016~2025) 신설이 243건으로 전체의 34%를 차지한다.</p>
+  </div>
+  <div class="growth-chart" id="growthChart"></div>
+</section>
+
+<!-- ③ 주기의 해부 -->
+<section class="chapter" id="ch-cycle">
+  <div class="chapter-head">
+    <span class="chapter-no">③</span>
     <h2>수립 주기 분포</h2>
     <p>전체의 73%(522건)가 5년 주기다. 다만 각 계획의 기산점은 근거 법률의 제정·시행 시점이므로,
     주기가 5년이어도 수립 연도는 계획마다 다르다. 원자료 코딩 기준으로 대통령 임기와
@@ -79,10 +91,36 @@
   </div>
 </section>
 
-<!-- ③ 조정체계의 중복 -->
+<!-- ④ 절차·환류 -->
+<section class="chapter" id="ch-process">
+  <div class="chapter-head">
+    <span class="chapter-no">④</span>
+    <h2>수립 절차와 사후 환류</h2>
+    <p>수립 단계 절차(위원회 심의·협의·공청회 등)와 수립 이후 환류 장치(시행계획·평가·국회보고)의
+    법정 규정 유무 현황이다. 절차를 하나도 규정하지 않은 계획이 38건, 다섯 절차를 모두 갖춘 계획은 5건이다.</p>
+  </div>
+  <div class="proc-grid">
+    <div>
+      <h3 class="proc-title">수립 단계 절차 (규정 보유 계획 수)</h3>
+      <div class="proc-chart" id="procChart"></div>
+    </div>
+    <div>
+      <h3 class="proc-title">수립 이후 환류 (규정 보유 계획 수)</h3>
+      <div class="proc-chart" id="followChart"></div>
+    </div>
+  </div>
+  <div class="proc-callouts">
+    <div class="callout"><span class="co-num" id="coNoEval">319</span><span class="co-label">시행계획 규정은 있으나<br>실적 평가 규정은 없음</span></div>
+    <div class="callout"><span class="co-num" id="coNoProc">38</span><span class="co-label">다섯 절차 모두<br>규정 없음</span></div>
+    <div class="callout"><span class="co-num" id="coCabinet">39</span><span class="co-label">국무회의 심의를<br>거치는 계획 (5.5%)</span></div>
+    <div class="callout"><span class="co-num" id="coReport">23.5%</span><span class="co-label">국회보고 규정<br>보유 비율 (168건)</span></div>
+  </div>
+</section>
+
+<!-- ⑤ 조정체계의 중복 -->
 <section class="chapter" id="ch-committee">
   <div class="chapter-head">
-    <span class="chapter-no">③</span>
+    <span class="chapter-no">⑤</span>
     <h2>심의 위원회 현황</h2>
     <p>계획 수립 과정에서 심의를 담당하는 위원회는 확인된 것만 <strong>343종</strong>이다
     (계획 2.1건당 1종). 아래는 심의 계획 수 상위 15개 위원회다.</p>
@@ -94,7 +132,7 @@
 <!-- ④ 부처 × 연도 히트맵 -->
 <section class="chapter" id="ch-heatmap">
   <div class="chapter-head">
-    <span class="chapter-no">④</span>
+    <span class="chapter-no">⑥</span>
     <h2>부처별 수립 연도 분포</h2>
     <p>부처별 2025~2035년 수립(갱신) 예정 계획 수. 색이 진할수록 해당 연도에 수립이 많다.
     파란 세로선은 정부 임기 경계 연도(2025·2030·2035).</p>
@@ -108,7 +146,7 @@
 <!-- ⑤ 전체 탐색 -->
 <section class="chapter" id="ch-table">
   <div class="chapter-head">
-    <span class="chapter-no">⑤</span>
+    <span class="chapter-no">⑦</span>
     <h2>전체 계획 목록</h2>
     <p>계획명·법령·부처 검색, 주기·임기일치 여부 필터를 지원한다.</p>
   </div>

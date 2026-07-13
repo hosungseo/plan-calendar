@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__playwright__browser_evaluate",
+  "tool_input_preview": "{\"function\":\"() => { const el = document.getElementById('ch-growth'); el.scrollIntoView({behavior:'instant',block:'start'}); return {growthBars: document.querySelectorAll('.gbar').length, procRows: do...",
+  "error": "### Error\nTypeError: Cannot read properties of null (reading 'scrollIntoView')\n    at eval (eval at <anonymous> (eval at evaluate (:303:30)), <anonymous>:1:62)\n    at eval (eval at evaluate (:303:30), <anonymous>:4:50)\n    at UtilityScript.evaluate (<anonymous>:305:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "timestamp": "2026-07-13T05:45:22.269Z",
+  "retry_count": 1
+}

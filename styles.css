@@ -180,3 +180,26 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
   .ybar .yr { font-size: 10px; }
   .krow { grid-template-columns: minmax(110px, 150px) 1fr 40px; }
 }
+
+/* ── ② 신설 추이 ── */
+.growth-chart { display: flex; align-items: flex-end; gap: 1px; height: 200px; border-bottom: 2px solid var(--ink); position: relative; }
+.gbar { flex: 1; background: var(--navy-soft); min-width: 3px; position: relative; transition: height .7s cubic-bezier(.2,.7,.2,1); }
+.gbar.decade { background: var(--navy); }
+.gbar:hover { background: var(--signal); }
+.gbar .gtip {
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); font-size: 11.5px; padding: 3px 8px; white-space: nowrap; z-index: 3;
+}
+.gbar:hover .gtip { display: block; }
+.growth-axis { display: flex; justify-content: space-between; font-size: 11.5px; color: #6b7280; padding-top: 6px; }
+
+/* ── ④ 절차·환류 ── */
+.proc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.proc-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; letter-spacing: .02em; }
+.proc-chart { display: flex; flex-direction: column; gap: 8px; }
+.proc-callouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0; margin-top: 34px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.callout { padding: 16px 16px 18px; border-right: 1px solid var(--rule); }
+.callout:last-child { border-right: 0; }
+.co-num { font-family: var(--serif); font-weight: 900; font-size: 34px; color: var(--signal); display: block; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.co-label { font-size: 12.5px; color: #6b7280; line-height: 1.5; }
+@media (max-width: 720px) { .proc-grid { grid-template-columns: 1fr; } }

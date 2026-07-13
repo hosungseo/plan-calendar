@@ -218,3 +218,77 @@
   tMore.addEventListener("click", () => { shown += 120; render(); });
   render();
 })();
+
+/* ② 신설 추이 */
+(function () {
+  const M = window.PLAN_DATA.meta;
+  const gc = document.getElementById("growthChart");
+  if (!gc) return;
+  const dist = M.lawYearDist;
+  const y0 = 1961, y1 = 2026;
+  let gmax = 0;
+  for (let y = y0; y <= y1; y++) gmax = Math.max(gmax, dist[y] || 0);
+  const frag = document.createDocumentFragment();
+  const bars = [];
+  for (let y = y0; y <= y1; y++) {
+    const n = dist[y] || 0;
+    const el = document.createElement("div");
+    el.className = "gbar" + (y % 10 === 0 ? " decade" : "");
+    el.innerHTML = `<span class="gtip">${y}년 · ${n}건</span>`;
+    el.style.height = "0px";
+    frag.appendChild(el);
+    bars.push([el, n]);
+  }
+  gc.appendChild(frag);
+  const axis = document.createElement("div");
+  axis.className = "growth-axis";
+  axis.innerHTML = "<span>1961</span><span>1970</span><span>1980</span><span>1990</span><span>2000</span><span>2010</span><span>2020</span><span>2026</span>";
+  gc.after(axis);
+  const ioG = new IntersectionObserver((es) => {
+    es.forEach((e) => {
+      if (!e.isIntersecting) return; ioG.unobserve(e.target);
+      bars.forEach(([el, n]) => { el.style.height = (n / gmax * 190) + "px"; });
+    });
+  }, { threshold: 0.3 });
+  ioG.observe(gc);
+})();
+
+/* ④ 절차·환류 */
+(function () {
+  const M = window.PLAN_DATA.meta;
+  const pc = document.getElementById("procChart");
+  if (!pc) return;
+  const TOTAL = M.total;
+  const PROC = [
+    ["관계 중앙기관 협의", M.procCounts.consult],
+    ["위원회 심의", M.procCounts.committee],
+    ["지자체 협의·자료제출", M.procCounts.local],
+    ["공청회 등 의견수렴", M.procCounts.hearing],
+    ["국무회의 심의", M.procCounts.cabinet],
+  ];
+  const FOLLOW = [
+    ["시행계획 수립", M.followup.implPlan],
+    ["변경 근거 규정", M.followup.changeProvision],
+    ["시행계획 실적 평가", M.followup.implEval],
+    ["국회 보고", M.followup.assemblyReport],
+  ];
+  function fill(el, rows, hotIdx) {
+    rows.forEach(([label, n], i) => {
+      const r = document.createElement("div");
+      r.className = "krow";
+      r.innerHTML = `<span class="kl" title="${label}">${label}</span><div class="kbarwrap"><div class="kbar" style="${i === hotIdx ? "background:var(--signal)" : ""}"></div></div><span class="kv">${n}</span>`;
+      el.appendChild(r);
+    });
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => {
+        if (!e.isIntersecting) return; io.unobserve(e.target);
+        el.querySelectorAll(".krow").forEach((row, i) => {
+          row.querySelector(".kbar").style.width = (rows[i][1] / TOTAL * 100) + "%";
+        });
+      });
+    }, { threshold: 0.3 });
+    io.observe(el);
+  }
+  fill(pc, PROC, 4);
+  fill(document.getElementById("followChart"), FOLLOW, 2);
+})();
