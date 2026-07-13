@@ -1,4 +1,4 @@
-/* 엇갈린 시계 — 관보/기획기사 에디토리얼 */
+/* 국가 법정계획 현황판 */
 :root {
   --paper: #f7f4ec;        /* 아이보리 지면 */
   --paper-deep: #efe9db;
@@ -31,11 +31,15 @@ body {
   margin-bottom: 28px; background: var(--paper);
 }
 .masthead h1 {
-  font-family: var(--serif); font-weight: 900; font-size: clamp(38px, 7vw, 74px);
-  line-height: 1.18; letter-spacing: -0.015em; color: var(--ink);
+  font-family: var(--sans); font-weight: 700; font-size: clamp(30px, 5vw, 46px);
+  line-height: 1.25; letter-spacing: -0.01em; color: var(--ink);
   animation: rise .8s cubic-bezier(.2,.7,.2,1) both;
 }
-.masthead h1 .num-accent { font-style: normal; color: var(--signal); }
+.subtitle {
+  font-size: clamp(15px, 2.2vw, 19px); color: var(--navy); font-weight: 500;
+  margin-top: 10px; animation: rise .8s .08s cubic-bezier(.2,.7,.2,1) both;
+}
+.subtitle .num-accent, .masthead h1 .num-accent { font-style: normal; color: var(--signal); font-weight: 700; }
 .lede {
   max-width: 640px; margin: 30px 0 0; font-size: 17px; color: #3c4350;
   animation: rise .8s .15s cubic-bezier(.2,.7,.2,1) both;
@@ -58,10 +62,11 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 .chapter { padding: 88px 0 8px; opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
 .chapter.on { opacity: 1; transform: none; }
 .chapter-no {
-  font-family: var(--serif); font-size: 30px; color: var(--signal); font-weight: 700;
-  display: inline-block; margin-bottom: 6px;
+  font-family: var(--sans); font-size: 15px; color: var(--paper); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; background: var(--navy); border-radius: 2px; margin-bottom: 8px;
 }
-.chapter h2 { font-family: var(--serif); font-weight: 700; font-size: clamp(26px, 4vw, 38px); line-height: 1.3; margin-bottom: 14px; }
+.chapter h2 { font-family: var(--sans); font-weight: 700; font-size: clamp(21px, 3.2vw, 28px); line-height: 1.3; margin-bottom: 12px; }
 .chapter-head p { max-width: 660px; color: #3c4350; font-size: 15.5px; }
 .chapter-head { margin-bottom: 36px; }
 
@@ -87,7 +92,7 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 .ybar.term-start .yr { color: var(--navy); font-weight: 700; }
 .year-detail { margin-top: 26px; border: 2px solid var(--ink); background: #fffdf7; box-shadow: 6px 6px 0 rgba(20,53,95,.12); }
 .year-detail-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
-.year-detail-head h3 { font-family: var(--serif); font-size: 19px; }
+.year-detail-head h3 { font-family: var(--sans); font-weight: 700; font-size: 17px; }
 .closer { background: none; border: 0; font-size: 26px; cursor: pointer; color: var(--ink); line-height: 1; }
 .plan-list { list-style: none; max-height: 380px; overflow: auto; padding: 8px 0; }
 .plan-list li { padding: 9px 18px; border-bottom: 1px dotted var(--rule); font-size: 14px; display: flex; gap: 10px; align-items: baseline; }
@@ -158,7 +163,7 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 
 /* ── 제언·푸터 ── */
 .closing-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-.closing-col h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 12px; color: var(--navy); }
+
 .closing-col ul { list-style: none; }
 .closing-col li { padding: 10px 0 10px 20px; border-bottom: 1px dotted var(--rule); font-size: 15px; position: relative; }
 .closing-col li::before { content: "—"; position: absolute; left: 0; color: var(--signal); }
