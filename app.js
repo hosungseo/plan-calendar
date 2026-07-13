@@ -3,15 +3,19 @@
   const D = window.PLAN_DATA;
   const M = D.meta;
   const YEARS = [];
-  for (let y = 2025; y <= 2035; y++) YEARS.push(y);
-  // 정부 임기 밴드 — 취임 시점(6월≈연도+0.42)에 맞춰 비례 배치
-  const SPAN0 = 2025, SPANN = 11; // 2025~2035 (막대 11개)
+  for (let y = 2021; y <= 2035; y++) YEARS.push(y);
+  // 정부 임기 밴드 — 취임·퇴임 시점을 연도 소수(월/12)로 비례 배치
+  const SPAN0 = 2021, SPANN = 15; // 2021~2035 (막대 15개)
+  const TERM_FROM = 2025.42, TERM_TO = 2030.42; // 이재명 정부 2025.6~2030.6
   const TERMS = [
-    { from: 2025.0, to: 2025.42, name: "", dates: "", cls: "prev", title: "전임 정부 (~2025.6)" },
-    { from: 2025.42, to: 2030.42, name: "이재명 정부", dates: "2025.6~2030.6", cls: "" },
-    { from: 2030.42, to: 2036.0, name: "차기 정부", dates: "2030.6~", cls: "alt" },
+    { from: 2021.0, to: 2022.36, name: "문재인 정부", dates: "~2022.5", cls: "past" },
+    { from: 2022.36, to: 2025.26, name: "윤석열 정부", dates: "2022.5~2025.4", cls: "past" },
+    { from: 2025.26, to: 2025.42, name: "", dates: "", cls: "prev", title: "대통령 권한대행 (2025.4~6)" },
+    { from: TERM_FROM, to: TERM_TO, name: "이재명 정부", dates: "2025.6~2030.6", cls: "" },
+    { from: TERM_TO, to: 2036.0, name: "차기 정부", dates: "2030.6~", cls: "alt" },
   ];
   const TERM_STARTS = new Set([2025, 2030, 2035]);
+  const LAST_ACTUAL = 2025; // ~2025 = 실제 수립연도, 2026~ = 투영
 
   /* 히어로 카운트업 */
   const nums = document.querySelectorAll(".stat-num");
@@ -50,29 +54,56 @@
     if (t.title) el.title = t.title;
     bands.appendChild(el);
   });
-  // 취임 시점 수직 점선 (밴드~막대 영역 관통)
-  [2025.42, 2030.42].forEach((x) => {
+  // 폭이 좁으면 날짜부터, 그래도 좁으면 이름까지 숨김 (툴팁으로 유지)
+  function fitBandLabels() {
+    bands.querySelectorAll(".term-band").forEach((el) => {
+      const nm = el.querySelector(".tname"), dt = el.querySelector(".tdates");
+      if (!nm) return;
+      nm.style.display = ""; if (dt) dt.style.display = "";
+      if (el.scrollWidth > el.clientWidth + 2 && dt) dt.style.display = "none";
+      if (el.scrollWidth > el.clientWidth + 2) { el.title = (nm.textContent + (dt ? " " + dt.textContent : "")).trim(); nm.style.display = "none"; }
+    });
+  }
+  requestAnimationFrame(fitBandLabels);
+  window.addEventListener("resize", fitBandLabels);
+  // 이재명 정부 임기 창(통제 구간) 배경 워시 + 취임·퇴임 점선
+  const win = document.createElement("div");
+  win.className = "term-window";
+  win.style.left = ((TERM_FROM - SPAN0) / SPANN * 100) + "%";
+  win.style.width = ((TERM_TO - TERM_FROM) / SPANN * 100) + "%";
+  document.querySelector(".timeline-wrap").appendChild(win);
+  [TERM_FROM, TERM_TO].forEach((x) => {
     const ln = document.createElement("div");
     ln.className = "inaug-line";
     ln.style.left = ((x - SPAN0) / SPANN * 100) + "%";
     document.querySelector(".timeline-wrap").appendChild(ln);
   });
   const wrap = document.getElementById("yearBars");
-  const maxN = Math.max(...YEARS.map((y) => M.projYears[y] || 0));
+  const valOf = (y) => (y <= LAST_ACTUAL ? (M.estYearDist[y] || 0) : (M.projYears[y] || 0));
+  const maxN = Math.max(...YEARS.map(valOf));
   const detail = document.getElementById("yearDetail");
   const dTitle = document.getElementById("yearDetailTitle");
   const dList = document.getElementById("yearDetailList");
   let selBtn = null;
   YEARS.forEach((y) => {
-    const n = M.projYears[y] || 0;
+    const n = valOf(y);
+    // 임기 창 대비: 완전 포함(2026~2029)=in, 경계 연도(2025·2030)=부분, 그 외=out
+    let pos = "out";
+    if (y > TERM_FROM && y + 1 < TERM_TO + 0.01) pos = "in";
+    if (y === 2025) pos = "edge-start";
+    if (y === 2030) pos = "edge-end";
     const b = document.createElement("button");
-    b.className = "ybar" + (TERM_STARTS.has(y) ? " term-start" : "");
+    b.className = "ybar pos-" + pos + (TERM_STARTS.has(y) ? " term-start" : "") + (y > LAST_ACTUAL ? " proj" : "");
     b.innerHTML = `<span class="cnt">${n}</span><div class="barzone"><div class="bar" style="height:0"></div></div><span class="yr"><span class="y4">${y}</span><span class="y2">'${String(y).slice(2)}</span></span>`;
     b.addEventListener("click", () => {
       if (selBtn) selBtn.classList.remove("sel");
       selBtn = b; b.classList.add("sel");
-      const items = D.plans.filter((p) => p.proj.includes(y));
-      dTitle.textContent = `${y}년 수립 예정 — ${items.length}건`;
+      const items = y <= LAST_ACTUAL
+        ? D.plans.filter((p) => p.year === y)
+        : D.plans.filter((p) => p.proj.includes(y));
+      dTitle.textContent = y <= LAST_ACTUAL
+        ? `${y}년 수립 — ${items.length}건 (수립연도 기준)`
+        : `${y}년 수립 예정 — ${items.length}건 (주기 투영)`;
       dList.innerHTML = items
         .sort((a, b2) => a.ministry.localeCompare(b2.ministry, "ko"))
         .map((p) => `<li><span class="m">${p.ministry}</span> ${p.name}<span class="c">${p.cycle ? p.cycle + "년 주기" : ""}</span></li>`)

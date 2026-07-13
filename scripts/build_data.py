@@ -97,7 +97,10 @@ for p in plans:
 ministry_count = Counter(p["ministry"] for p in plans)
 cycle_dist = Counter(p["cycle"] for p in plans if p["cycle"])
 
+est_year_dist = Counter(p["year"] for p in plans if p["year"])
+
 meta = {
+    "estYearDist": dict(sorted(est_year_dist.items())),
     "total": len(plans),
     "baseline": "2025-12",
     "termAligned": sum(1 for p in plans if p["termAligned"] == 1),

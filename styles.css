@@ -75,28 +75,45 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 .term-bands { position: relative; height: 38px; border-bottom: 1px dashed var(--rule); }
 .term-band {
   position: absolute; top: 5px; bottom: 5px;
+  box-shadow: 2px 0 0 var(--paper);
   background: var(--navy); color: #f0e9d8; font-size: 12px; letter-spacing: .04em;
   display: flex; align-items: center; padding: 0 10px; white-space: nowrap; overflow: hidden;
   border-radius: 2px;
 }
 .term-band.alt { background: var(--navy-soft); }
-.term-band.prev { background: var(--paper-deep); color: #8a8f99; justify-content: center; padding: 0 4px; }
+.term-band.prev { background: var(--paper-deep); color: #8a8f99; justify-content: center; padding: 0 2px; }
+.term-band.past { background: #a9a293; color: #f5f1e6; }
+.term-window {
+  position: absolute; top: 0; bottom: 26px; z-index: 0; pointer-events: none;
+  background: rgba(20,53,95,.07);
+}
 .term-band .tname { font-weight: 700; }
 .term-band .tdates { margin-left: 6px; opacity: .75; font-size: 11px; }
 .inaug-line {
   position: absolute; top: 0; bottom: 0; width: 0;
   border-left: 2px dashed rgba(216,67,21,.55); z-index: 2; pointer-events: none;
 }
-.year-bars { display: flex; align-items: stretch; gap: 5px; height: 230px; padding: 14px 0 0; }
+.year-bars { display: flex; align-items: stretch; gap: 4px; height: 230px; padding: 14px 0 0; position: relative; z-index: 1; }
 .ybar { flex: 1; display: flex; flex-direction: column; cursor: pointer; text-align: center; background: none; border: 0; font-family: var(--sans); padding: 0; min-width: 0; }
 .ybar .cnt { font-weight: 700; font-size: 13.5px; color: var(--ink); font-variant-numeric: tabular-nums; }
 .ybar .barzone { flex: 1; display: flex; align-items: flex-end; }
 .ybar .bar {
   background: var(--signal); width: 100%;
-  transition: height .8s cubic-bezier(.2,.7,.2,1), background .2s;
+  transition: height .8s cubic-bezier(.2,.7,.2,1), background .2s, filter .2s;
   border-top: 2px solid #a53210;
 }
-.ybar:hover .bar, .ybar.sel .bar { background: var(--navy); border-top-color: var(--ink); }
+.ybar.pos-out .bar { background: #b9b2a2; border-top-color: #948d7c; }
+.ybar.pos-out .cnt { color: #8a8f99; }
+.ybar.pos-edge-start .bar { background: linear-gradient(90deg, #b9b2a2 0 42%, var(--signal) 42%); border-top-color: #a53210; }
+.ybar.pos-edge-end .bar { background: linear-gradient(90deg, var(--signal) 0 42%, #b9b2a2 42%); border-top-color: #a53210; }
+.ybar.proj .bar { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 4px, transparent 4px 9px); }
+.ybar.pos-edge-start.proj .bar { background-image:
+  repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 4px, transparent 4px 9px),
+  linear-gradient(90deg, #b9b2a2 0 42%, var(--signal) 42%); }
+.ybar.pos-edge-end.proj .bar { background-image:
+  repeating-linear-gradient(45deg, rgba(255,255,255,.22) 0 4px, transparent 4px 9px),
+  linear-gradient(90deg, var(--signal) 0 42%, #b9b2a2 42%); }
+.ybar:hover .bar, .ybar.sel .bar { background-color: var(--navy) !important; border-top-color: var(--ink) !important; background-image: none !important; }
 .ybar .yr { font-size: 12px; color: #6b7280; padding: 6px 0 2px; border-top: 2px solid var(--ink); }
 .ybar.term-start .yr { color: var(--navy); font-weight: 700; }
 .ybar .y2 { display: none; }
@@ -186,8 +203,8 @@ main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
 @media (max-width: 720px) {
   .cycle-grid, .closing-cols { grid-template-columns: 1fr; }
   .cycle-note { border-left: 0; border-top: 2px solid var(--ink); padding: 20px 0 0; }
-  .year-bars { height: 170px; gap: 2px; }
-  .ybar .cnt { font-size: 10px; letter-spacing: -0.04em; }
+  .year-bars { height: 165px; gap: 1.5px; }
+  .ybar .cnt { display: none; }
   .ybar .yr { font-size: 10.5px; padding: 5px 0 1px; }
   .ybar .y4 { display: none; }
   .ybar .y2 { display: inline; }
