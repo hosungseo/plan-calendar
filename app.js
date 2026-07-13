@@ -4,10 +4,12 @@
   const M = D.meta;
   const YEARS = [];
   for (let y = 2025; y <= 2035; y++) YEARS.push(y);
-  // 정부 임기 밴드 (연 단위 근사; 취임 6월은 라벨로 표기)
+  // 정부 임기 밴드 — 취임 시점(6월≈연도+0.42)에 맞춰 비례 배치
+  const SPAN0 = 2025, SPANN = 11; // 2025~2035 (막대 11개)
   const TERMS = [
-    { from: 2025, to: 2030, label: "이재명 정부 (2025.6~2030.6)", cls: "" },
-    { from: 2030, to: 2035, label: "차기 정부 (2030.6~)", cls: "alt" },
+    { from: 2025.0, to: 2025.42, name: "", dates: "", cls: "prev", title: "전임 정부 (~2025.6)" },
+    { from: 2025.42, to: 2030.42, name: "이재명 정부", dates: "2025.6~2030.6", cls: "" },
+    { from: 2030.42, to: 2036.0, name: "차기 정부", dates: "2030.6~", cls: "alt" },
   ];
   const TERM_STARTS = new Set([2025, 2030, 2035]);
 
@@ -42,9 +44,18 @@
   TERMS.forEach((t) => {
     const el = document.createElement("div");
     el.className = "term-band " + t.cls;
-    el.style.flex = String(t.to - t.from);
-    el.textContent = t.label;
+    el.style.left = ((t.from - SPAN0) / SPANN * 100) + "%";
+    el.style.width = (Math.min(t.to, SPAN0 + SPANN) - t.from) / SPANN * 100 + "%";
+    el.innerHTML = t.name ? `<span class="tname">${t.name}</span><span class="tdates">${t.dates}</span>` : "";
+    if (t.title) el.title = t.title;
     bands.appendChild(el);
+  });
+  // 취임 시점 수직 점선 (밴드~막대 영역 관통)
+  [2025.42, 2030.42].forEach((x) => {
+    const ln = document.createElement("div");
+    ln.className = "inaug-line";
+    ln.style.left = ((x - SPAN0) / SPANN * 100) + "%";
+    document.querySelector(".timeline-wrap").appendChild(ln);
   });
   const wrap = document.getElementById("yearBars");
   const maxN = Math.max(...YEARS.map((y) => M.projYears[y] || 0));
@@ -56,7 +67,7 @@
     const n = M.projYears[y] || 0;
     const b = document.createElement("button");
     b.className = "ybar" + (TERM_STARTS.has(y) ? " term-start" : "");
-    b.innerHTML = `<span class="cnt">${n}</span><div class="bar" style="height:0"></div><span class="yr">${y}</span>`;
+    b.innerHTML = `<span class="cnt">${n}</span><div class="barzone"><div class="bar" style="height:0"></div></div><span class="yr"><span class="y4">${y}</span><span class="y2">'${String(y).slice(2)}</span></span>`;
     b.addEventListener("click", () => {
       if (selBtn) selBtn.classList.remove("sel");
       selBtn = b; b.classList.add("sel");
@@ -71,7 +82,7 @@
     });
     wrap.appendChild(b);
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      b.querySelector(".bar").style.height = (n / maxN * 180) + "px";
+      b.querySelector(".bar").style.height = (n / maxN * 100) + "%";
     }));
   });
   document.getElementById("yearDetailClose").addEventListener("click", () => {
