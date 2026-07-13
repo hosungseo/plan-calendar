@@ -1,0 +1,220 @@
+/* 엇갈린 시계 — 인터랙션 */
+(function () {
+  const D = window.PLAN_DATA;
+  const M = D.meta;
+  const YEARS = [];
+  for (let y = 2025; y <= 2035; y++) YEARS.push(y);
+  // 정부 임기 밴드 (연 단위 근사; 취임 6월은 라벨로 표기)
+  const TERMS = [
+    { from: 2025, to: 2030, label: "이재명 정부 (2025.6~2030.6)", cls: "" },
+    { from: 2030, to: 2035, label: "차기 정부 (2030.6~)", cls: "alt" },
+  ];
+  const TERM_STARTS = new Set([2025, 2030, 2035]);
+
+  /* 히어로 카운트업 */
+  const nums = document.querySelectorAll(".stat-num");
+  const io0 = new IntersectionObserver((es) => {
+    es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      io0.unobserve(e.target);
+      const t = parseFloat(e.target.dataset.count);
+      const suf = e.target.dataset.suffix || "";
+      const dec = String(e.target.dataset.count).includes(".") ? 1 : 0;
+      const t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min(1, (now - t0) / 1200);
+        const v = t * (1 - Math.pow(1 - p, 3));
+        e.target.textContent = v.toFixed(dec) + suf;
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    });
+  }, { threshold: 0.4 });
+  nums.forEach((n) => io0.observe(n));
+
+  /* 챕터 리빌 */
+  const io1 = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("on"); io1.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".chapter").forEach((c) => io1.observe(c));
+
+  /* ① 타임라인 */
+  const bands = document.getElementById("termBands");
+  TERMS.forEach((t) => {
+    const el = document.createElement("div");
+    el.className = "term-band " + t.cls;
+    el.style.flex = String(t.to - t.from);
+    el.textContent = t.label;
+    bands.appendChild(el);
+  });
+  const wrap = document.getElementById("yearBars");
+  const maxN = Math.max(...YEARS.map((y) => M.projYears[y] || 0));
+  const detail = document.getElementById("yearDetail");
+  const dTitle = document.getElementById("yearDetailTitle");
+  const dList = document.getElementById("yearDetailList");
+  let selBtn = null;
+  YEARS.forEach((y) => {
+    const n = M.projYears[y] || 0;
+    const b = document.createElement("button");
+    b.className = "ybar" + (TERM_STARTS.has(y) ? " term-start" : "");
+    b.innerHTML = `<span class="cnt">${n}</span><div class="bar" style="height:0"></div><span class="yr">${y}</span>`;
+    b.addEventListener("click", () => {
+      if (selBtn) selBtn.classList.remove("sel");
+      selBtn = b; b.classList.add("sel");
+      const items = D.plans.filter((p) => p.proj.includes(y));
+      dTitle.textContent = `${y}년 수립 예정 — ${items.length}건`;
+      dList.innerHTML = items
+        .sort((a, b2) => a.ministry.localeCompare(b2.ministry, "ko"))
+        .map((p) => `<li><span class="m">${p.ministry}</span> ${p.name}<span class="c">${p.cycle ? p.cycle + "년 주기" : ""}</span></li>`)
+        .join("");
+      detail.hidden = false;
+      detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    wrap.appendChild(b);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      b.querySelector(".bar").style.height = (n / maxN * 180) + "px";
+    }));
+  });
+  document.getElementById("yearDetailClose").addEventListener("click", () => {
+    detail.hidden = true;
+    if (selBtn) { selBtn.classList.remove("sel"); selBtn = null; }
+  });
+
+  /* ② 주기 분포 */
+  const cyc = M.cycleDist;
+  const order = Object.keys(cyc).map(Number).sort((a, b) => a - b);
+  const cmax = Math.max(...Object.values(cyc), M.noCycle);
+  const cc = document.getElementById("cycleChart");
+  const rows = order.map((k) => ({ label: k + "년 주기", n: cyc[k], hot: k === 5 }));
+  rows.push({ label: "주기 미확인", n: M.noCycle, hot: false });
+  rows.forEach((r) => {
+    const el = document.createElement("div");
+    el.className = "crow" + (r.hot ? " hot" : "");
+    el.innerHTML = `<span class="cl">${r.label}</span><div class="cbarwrap"><div class="cbar"></div></div><span class="cv">${r.n}</span>`;
+    cc.appendChild(el);
+  });
+  const io2 = new IntersectionObserver((es) => {
+    es.forEach((e) => {
+      if (!e.isIntersecting) return; io2.unobserve(e.target);
+      cc.querySelectorAll(".crow").forEach((el, i) => {
+        el.querySelector(".cbar").style.width = (rows[i].n / cmax * 100) + "%";
+      });
+    });
+  }, { threshold: 0.3 });
+  io2.observe(cc);
+  document.getElementById("cycle5num").textContent = M.cycle5;
+  document.getElementById("alignedNum").textContent = M.termAligned;
+
+  /* ③ 위원회 */
+  const kc = document.getElementById("committeeChart");
+  const top = M.committeeTop.slice(0, 15);
+  const kmax = top[0][1];
+  top.forEach(([name, n]) => {
+    const el = document.createElement("div");
+    el.className = "krow";
+    el.innerHTML = `<span class="kl" title="${name}">${name}</span><div class="kbarwrap"><div class="kbar"></div></div><span class="kv">${n}</span>`;
+    kc.appendChild(el);
+  });
+  const io3 = new IntersectionObserver((es) => {
+    es.forEach((e) => {
+      if (!e.isIntersecting) return; io3.unobserve(e.target);
+      kc.querySelectorAll(".krow").forEach((el, i) => {
+        el.querySelector(".kbar").style.width = (top[i][1] / kmax * 100) + "%";
+      });
+    });
+  }, { threshold: 0.3 });
+  io3.observe(kc);
+  const single = M.committeeTop.length ? null : null;
+  const singles = (function () {
+    let c = 0;
+    const seen = {};
+    D.plans.forEach((p) => p.committee.forEach((k) => { seen[k] = (seen[k] || 0) + 1; }));
+    Object.values(seen).forEach((v) => { if (v === 1) c++; });
+    return c;
+  })();
+  document.getElementById("committeeTail").textContent =
+    `확인된 위원회 ${M.committees}종 중 ${singles}종은 단 하나의 계획만 심의한다. 상위 15개 위원회가 전체 심의 연결의 상당 부분을 감당하는 반면, 꼬리는 길고 얇다.`;
+
+  /* ④ 히트맵 */
+  const hm = document.getElementById("heatmap");
+  const perMin = {};
+  D.plans.forEach((p) => {
+    if (!perMin[p.ministry]) perMin[p.ministry] = { total: 0, years: {} };
+    perMin[p.ministry].total++;
+    p.proj.forEach((y) => { perMin[p.ministry].years[y] = (perMin[p.ministry].years[y] || 0) + 1; });
+  });
+  const minOrder = Object.entries(perMin).sort((a, b) => b[1].total - a[1].total);
+  let html = "<thead><tr><th style='text-align:left;padding-left:12px'>부처 (계획 수)</th>" +
+    YEARS.map((y) => `<th class="${TERM_STARTS.has(y) ? "term-start" : ""}">${String(y).slice(2)}</th>`).join("") + "</tr></thead><tbody>";
+  const hmMax = Math.max(...minOrder.flatMap(([, v]) => YEARS.map((y) => v.years[y] || 0)));
+  minOrder.forEach(([name, v], idx) => {
+    html += `<tr class="${idx >= 15 ? "hidden-row" : ""}"><td class="mname">${name} (${v.total})</td>`;
+    YEARS.forEach((y) => {
+      const n = v.years[y] || 0;
+      const a = n ? (0.12 + 0.78 * n / hmMax).toFixed(2) : 0;
+      html += `<td class="${TERM_STARTS.has(y) ? "term-start" : ""}" style="background:rgba(216,67,21,${a})${n && n / hmMax > 0.55 ? ";color:#fff;font-weight:700" : ""}">${n || ""}</td>`;
+    });
+    html += "</tr>";
+  });
+  hm.innerHTML = html + "</tbody>";
+  const moreBtn = document.getElementById("heatmapMore");
+  moreBtn.addEventListener("click", () => {
+    const hidden = hm.querySelectorAll("tr.hidden-row");
+    if (hidden.length) { hidden.forEach((r) => r.classList.remove("hidden-row")); moreBtn.textContent = "접기 ▴"; }
+    else {
+      hm.querySelectorAll("tbody tr").forEach((r, i) => { if (i >= 15) r.classList.add("hidden-row"); });
+      moreBtn.textContent = "부처 전체 보기 ▾";
+    }
+  });
+
+  /* ⑤ 테이블 */
+  const tbody = document.getElementById("tbody");
+  const q = document.getElementById("q");
+  const fM = document.getElementById("fMinistry");
+  const fC = document.getElementById("fCycle");
+  const fA = document.getElementById("fAlign");
+  const hit = document.getElementById("hitCount");
+  const tMore = document.getElementById("tableMore");
+  Object.keys(M.ministryCount).forEach((m) => {
+    const o = document.createElement("option");
+    o.value = m; o.textContent = `${m} (${M.ministryCount[m]})`;
+    fM.appendChild(o);
+  });
+  let shown = 60;
+  function alignBadge(v) {
+    if (v === 1) return '<span class="badge ok">일치</span>';
+    if (v === 0) return '<span class="badge no">불일치</span>';
+    return '<span class="badge unk">미확인</span>';
+  }
+  function filtered() {
+    const kw = q.value.trim().toLowerCase();
+    return D.plans.filter((p) => {
+      if (fM.value && p.ministry !== fM.value) return false;
+      if (fC.value === "none") { if (p.cycle) return false; }
+      else if (fC.value && p.cycle !== Number(fC.value)) return false;
+      if (fA.value === "1" && p.termAligned !== 1) return false;
+      if (fA.value === "0" && p.termAligned !== 0) return false;
+      if (fA.value === "u" && p.termAligned !== null) return false;
+      if (kw && !(p.name + p.law + p.ministry + p.dept).toLowerCase().includes(kw)) return false;
+      return true;
+    });
+  }
+  function render() {
+    const rows2 = filtered();
+    hit.textContent = `${rows2.length}건`;
+    tbody.innerHTML = rows2.slice(0, shown).map((p) => `
+      <tr>
+        <td class="num">${p.no}</td>
+        <td class="name">${p.name}</td>
+        <td>${p.ministry}</td>
+        <td class="law">${p.law}</td>
+        <td class="num">${p.cycle ? p.cycle + "년" : "—"}</td>
+        <td class="num">${p.year || "—"}</td>
+        <td class="num">${p.proj[0] || "—"}</td>
+        <td>${alignBadge(p.termAligned)}</td>
+      </tr>`).join("");
+    tMore.style.display = rows2.length > shown ? "block" : "none";
+  }
+  [q, fM, fC, fA].forEach((el) => el.addEventListener("input", () => { shown = 60; render(); }));
+  tMore.addEventListener("click", () => { shown += 120; render(); });
+  render();
+})();
